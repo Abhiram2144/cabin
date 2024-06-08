@@ -20,7 +20,7 @@ const customStyles = {
   },
 };
 
-const CabinModal = ({ isOpen, onRequestClose, onSave, onReset, cabin }) => {
+const CabinModal = ({ isOpen, onRequestClose, onSave, onReserve, onCancel, onReset, cabin }) => {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -46,8 +46,14 @@ const CabinModal = ({ isOpen, onRequestClose, onSave, onReset, cabin }) => {
     setError('');
   };
 
-  const handleReset = () => {
-    onReset(cabin.id);
+  const handleReserve = () => {
+    if (!userName || !email || !phoneNumber || !startTime) {
+      setError('All fields are required');
+      return;
+    }
+
+    onReserve(cabin.id, { userName, email, phoneNumber, startTime });
+    setError('');
   };
 
   return (
@@ -59,7 +65,7 @@ const CabinModal = ({ isOpen, onRequestClose, onSave, onReset, cabin }) => {
     >
       <div className="bg-white p-6 rounded shadow-md w-full max-w-2xl mx-auto">
         <h2 className="text-lg font-bold mb-4">Cabin {cabin.id}</h2>
-        {cabin.status === 'free' ? (
+        {(cabin.status === 'free' || cabin.status === 'reserved') ? (
           <>
             <input
               className="block w-full p-2 mb-2 border rounded"
@@ -91,11 +97,16 @@ const CabinModal = ({ isOpen, onRequestClose, onSave, onReset, cabin }) => {
             />
             {error && <p className="text-red-500">{error}</p>}
             <div className="flex justify-end space-x-2">
+              {cabin.status === 'free' && (
+                <button className="bg-green-500 text-white p-2 rounded" onClick={handleReserve}>
+                  Reserve
+                </button>
+              )}
               <button className="bg-blue-500 text-white p-2 rounded" onClick={handleSave}>
-                Save
+                Book Now
               </button>
               <button className="bg-gray-500 text-white p-2 rounded" onClick={onRequestClose}>
-                Close
+                Cancel
               </button>
             </div>
           </>
@@ -114,7 +125,7 @@ const CabinModal = ({ isOpen, onRequestClose, onSave, onReset, cabin }) => {
               <strong>Start Time:</strong> {cabin.startTime}
             </p>
             <div className="flex justify-end space-x-2">
-              <button className="bg-red-500 text-white p-2 rounded" onClick={handleReset}>
+              <button className="bg-red-500 text-white p-2 rounded" onClick={() => onReset(cabin.id)}>
                 Reset
               </button>
               <button className="bg-gray-500 text-white p-2 rounded" onClick={onRequestClose}>
